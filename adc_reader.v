@@ -6,7 +6,7 @@ module adc_reader
 #(parameter  datos_bits = 12, total_bits = 15)
 (
 	input clk_adc, serial_ready, in_adc,
-	output reg chip_select, 
+	output reg chip_select, bit0_adc, bit1_adc, bit2_adc, bit3_adc, bit4_adc, bit5_adc, bit6_adc, bit7_adc,
 	output reg [datos_bits-1:0] datos_adc
 );
 
@@ -48,6 +48,18 @@ module adc_reader
 		else
 		begin
 			chip_select <= 1'b1;	
+			//Solo es necesario enviar 8 bits - especificaciones del proyecto
+			//La salida será dividida en bits porque el bloque de comunicacion serial no puede recibir
+			//un conjunto de bits como input 
+			bit0_adc <= datos_adc[0];
+			bit1_adc <= datos_adc[1];
+			bit2_adc <= datos_adc[2];
+			bit3_adc <= datos_adc[3];
+			bit4_adc <= datos_adc[4];
+			bit5_adc <= datos_adc[5];
+			bit6_adc <= datos_adc[6];
+			bit7_adc <= datos_adc[7];
+			//MSB First
 		end
 	end // always @ (posedge clk_adc)
 
