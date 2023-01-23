@@ -4,14 +4,12 @@
 
 module clock_divider
 (
-	clk_in, enable, reset, freq_userA, freq_userB, // dos bits para leer los interruptores de seleccion de frecuencia
-	
-	clk_out
+	input clk_in, enable, reset, freq_userA, freq_userB,// dos bits para leer los interruptores de seleccion de frecuencia
+	output reg clk_out
 );
 
 
-	input clk_in, enable, reset, freq_userA, freq_userB;// dos bits para leer los interruptores de seleccion de frecuencia
-	output reg clk_out;
+	
 	
 	integer freq_div; // Por cuanto dividiremos la frecuencia original de 50M Hz
 	integer count;    // Contador de flancos del reloj - no necesita ser entero, se puede usar una variable que requiere menos espacio
@@ -19,6 +17,12 @@ module clock_divider
 
 	assign freq_user = {freq_userA, freq_userB};
 
+
+	initial
+	begin
+		count = 0;
+		clk_out <= 0;
+	end
 	
 	
 	// Si ha un cambio en los interruptores
@@ -31,18 +35,14 @@ module clock_divider
 				2'b10: freq_div = 32;	
 				2'b11: freq_div = 16;
 			endcase
-	end
 
-	// Reset if needed, or increment if counting is enabled
-	always @ (posedge clk_in or posedge reset)
-	begin
 		
 		if (reset)
 		begin
 			count = 0;
 			clk_out <= 0;
 		end
-		else if (enable)
+		if (enable)
 		begin
 			count = count + 1;
 			

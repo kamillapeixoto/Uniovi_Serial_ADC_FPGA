@@ -6,45 +6,51 @@
 
 
 module baud_generator
-#(parameter clock = 50000000, baud = 9600)
-(	
-	input baud_clk_in, enable, reset, 
-	
-	output reg baud_clk_out
+(
+	input clk_in, enable, reset,// dos bits para leer los interruptores de seleccion de frecuencia
+	output reg clk_out
 );
 
 
 	
 	
+	integer freq_div; // Por cuanto dividiremos la frecuencia original de 50M Hz
 	integer count;    // Contador de flancos del reloj - no necesita ser entero, se puede usar una variable que requiere menos espacio
-	integer freq_div;
-	
-	
+
+
+
+
 	initial
 	begin
-		freq_div = clock/baud;
+		count = 0;
+		clk_out <= 0;
 	end
 	
-	// Reset if needed, or increment if counting is enabled
-	always @ (posedge baud_clk_in or posedge reset)
+	
+	// Si ha un cambio en los interruptores
+	always @(posedge clk_in)
 	begin
+
+	
+				freq_div = 32;
+			
+
 		
 		if (reset)
 		begin
 			count = 0;
-			baud_clk_out <= 0;
+			clk_out <= 0;
 		end
-		else if (enable)
+		if (enable)
 		begin
 			count = count + 1;
 			
 			if (count >= freq_div)
 			begin
 				count = 0;
-				baud_clk_out <= ~baud_clk_out;
+				clk_out <= ~clk_out;
 			end
 		end // if (enable == 1'b1)
 	end
 
 endmodule
-

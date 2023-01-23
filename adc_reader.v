@@ -11,8 +11,10 @@ module adc_reader
 );
 
 	
-	integer contador;
+	integer contador, contador_cs;
 	reg [total_bits-1:0] full_data;
+	reg cont_out;
+	
 		
 	initial
 	begin
@@ -20,16 +22,27 @@ module adc_reader
 		contador    = 0;	
 	   datos_adc = 12'b0;  // datos_bits = 12, 
 		full_data = 15'b0; // total_bits = 15
+		cont_out = 1'b0;
+		contador_cs = 0;
 	end // initial
 
 
-	always @ (negedge clk_adc or posedge serial_ready) // La hoja de datos del ADC dijo que los datos son enviados el la falling edge
+	always @ (negedge clk_adc) // La hoja de datos del ADC dijo que los datos son enviados el la falling edge
 	begin
-		if (serial_ready == 1'b1) // Si la comunicacion serial ha terminado
+		if (cont_out==1'b1)
+		begin
+			contador_cs = contador_cs + 1;
+			if (contador_cs == 3)
+			begin
+				cont_out = 1'b0;
+				contador_cs = 0;
+			end
+		end
+		else if (serial_ready == 1'b1) // Si la comunicacion serial ha terminado
 		begin
 			chip_select = 1'b0;	   // Pede datos al conversor ADC y desactiva el bloque de comunicacion
 			// OJO: Solo vay a recibir en el proximo ciclo
-			
+			cont_out = 1'b0;
 			full_data[contador] <= in_adc;
 		
 			
@@ -41,6 +54,7 @@ module adc_reader
 				chip_select <= 1'b1;	   // Para de pedir datos al conversor ADC y activa el bloque de comunicacion serial
 				datos_adc <= full_data[total_bits-1:3];
 				contador = 0;
+				cont_out = 1'b1;
 			end
 
 			
@@ -59,6 +73,7 @@ module adc_reader
 			bit5_adc <= datos_adc[5];
 			bit6_adc <= datos_adc[6];
 			bit7_adc <= datos_adc[7];
+
 			//MSB First
 		end
 	end // always @ (posedge clk_adc)
